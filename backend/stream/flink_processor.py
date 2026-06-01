@@ -106,6 +106,13 @@ class FlinkStreamProcessor:
         self._last_window_ts = now
 
         result = self._compute_window_result()
+        # 裁剪低热度话题，防止 _topic_agg 无限增长（保留 top200）
+        if len(self._topic_agg) > 200:
+            keep = sorted(self._topic_agg, key=lambda t: self._topic_agg[t]["heat_sum"], reverse=True)[:200]
+            self._topic_agg = defaultdict(
+                lambda: {"count": 0, "sentiment_sum": 0.0, "heat_sum": 0.0, "related": set()},
+                {k: self._topic_agg[k] for k in keep},
+            )
         for cb in self._callbacks:
             try:
                 await cb(result)

@@ -9,7 +9,6 @@ class Platform(str, Enum):
     douyin = "抖音"
     bilibili = "B站"
     zhihu = "知乎"
-    twitter = "Twitter"
     wechat = "微信"
 
 class Sentiment(str, Enum):

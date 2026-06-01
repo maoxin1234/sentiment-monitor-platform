@@ -94,7 +94,9 @@ async def stream_pipeline():
                 await broadcast({"type": "post", "data": recent_posts[0]})
                 await flink.tick()
             except Exception as e:
-                print(f"[pipeline] post error: {e}", flush=True)
+                import traceback
+                print(f"[pipeline] post error id={getattr(raw_post,'id','?')} "
+                      f"type={type(e).__name__}: {e}\n{traceback.format_exc()}", flush=True)
     except Exception as e:
         print(f"[pipeline] fatal: {e}", flush=True)
 

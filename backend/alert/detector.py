@@ -82,7 +82,6 @@ class AnomalyDetector:
             post_count = topic_data.get("post_count", 0)
             # 只有一定热度的话题才触发
             if post_count >= 5 and sentiment_avg < -0.4:
-                negative_rate = (1 - sentiment_avg) / 2  # 映射到0~1
                 alert = self._fire(AlertEvent(
                     id=str(uuid.uuid4())[:8],
                     level=AlertLevel.warning,

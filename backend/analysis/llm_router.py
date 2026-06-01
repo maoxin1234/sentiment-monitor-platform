@@ -106,7 +106,8 @@ class LLMRouter:
                 self._local_count += 1
                 return result, "local"
             result = await self.cloud.chat(system, user, timeout=15.0)
-            self._cloud_count += 1
+            if result:
+                self._cloud_count += 1
             return result, "cloud"
 
         elif self.strategy == "cloud_first":
@@ -115,7 +116,8 @@ class LLMRouter:
                 self._cloud_count += 1
                 return result, "cloud"
             result = await self.local.chat(system, user, timeout=6.0)
-            self._local_count += 1
+            if result:
+                self._local_count += 1
             return result, "local"
 
         elif self.strategy == "cost_aware":
