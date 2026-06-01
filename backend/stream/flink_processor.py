@@ -9,11 +9,13 @@
   - 异常检测（流量突增 / 情感骤降）
 """
 import asyncio
+import logging
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Callable, Awaitable
 import time
 
+logger = logging.getLogger(__name__)
 from models.schemas import AnalyzedPost, Sentiment
 
 
@@ -116,8 +118,8 @@ class FlinkStreamProcessor:
         for cb in self._callbacks:
             try:
                 await cb(result)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Window callback failed: {type(e).__name__}: {e}")
 
     def _compute_window_result(self) -> dict:
         items_10s = self._window_10s.items()

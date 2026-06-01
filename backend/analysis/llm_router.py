@@ -8,9 +8,11 @@
 """
 import asyncio
 import time
+import logging
 from typing import Optional
 import httpx
 
+logger = logging.getLogger(__name__)
 from config import config
 
 
@@ -57,9 +59,10 @@ class ModelClient:
                     self._success += 1
                     self._total_ms += int((time.time() - t0) * 1000)
                     return result
-            except Exception:
+            except Exception as e:
                 self._failure += 1
                 self._total_ms += int((time.time() - t0) * 1000)
+                logger.debug(f"Model {self.model} request failed: {type(e).__name__}")
                 return None
 
     def stats(self) -> dict:

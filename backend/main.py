@@ -5,6 +5,8 @@
 import asyncio
 import json
 import time
+import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Set
 
@@ -13,6 +15,10 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from dotenv import load_dotenv
+
+load_dotenv()
+logger = logging.getLogger(__name__)
 
 from config import config
 from stream.mock_producer import generate_post_stream
@@ -59,7 +65,7 @@ async def stream_pipeline():
     """主流水线：数据源 -> Flink处理 -> LLM分析 -> 广播"""
     global total_today
     use_llm = bool(config.llm.cloud_api_key)
-    print(f"[pipeline] start use_llm={use_llm} rate={config.mock_rate}", flush=True)
+    logger.info(f"Pipeline started: use_llm={use_llm}, rate={config.mock_rate}")
 
     try:
         async for raw_post in generate_post_stream(rate=config.mock_rate):
@@ -89,16 +95,14 @@ async def stream_pipeline():
                     recent_posts.pop()
 
                 if total_today % 20 == 0:
-                    print(f"[pipeline] total={total_today}", flush=True)
+                    logger.info(f"Pipeline progress: {total_today} posts processed")
 
                 await broadcast({"type": "post", "data": recent_posts[0]})
                 await flink.tick()
             except Exception as e:
-                import traceback
-                print(f"[pipeline] post error id={getattr(raw_post,'id','?')} "
-                      f"type={type(e).__name__}: {e}\n{traceback.format_exc()}", flush=True)
+                logger.error(f"Post processing error (id={getattr(raw_post, 'id', '?')}): {type(e).__name__}: {e}", exc_info=True)
     except Exception as e:
-        print(f"[pipeline] fatal: {e}", flush=True)
+        logger.critical(f"Pipeline fatal error: {e}", exc_info=True)
 
 
 # ── 生命周期 ──────────────────────────────────────────────────────────────────

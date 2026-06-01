@@ -4,8 +4,11 @@
 """
 import time
 import re
+import json
+import logging
 from typing import Tuple
 
+logger = logging.getLogger(__name__)
 from models.schemas import RawPost, AnalyzedPost, Sentiment
 from analysis.llm_router import llm_router
 
@@ -83,7 +86,6 @@ async def analyze_post(raw: RawPost, use_llm: bool = True) -> AnalyzedPost:
                 user=f"文本：{raw.content}\n平台：{raw.platform.value}\n关键词：{','.join(raw.topic_keywords)}",
             )
             if content:
-                import json
                 # 提取JSON（LLM可能返回多余文字）
                 match = re.search(r'\{.*?\}', content, re.DOTALL)
                 if match:
@@ -95,8 +97,8 @@ async def analyze_post(raw: RawPost, use_llm: bool = True) -> AnalyzedPost:
                     topics = data.get("topics", topics) or topics
                     summary = data.get("summary", summary)
                     processed_by = model_type
-        except Exception:
-            pass  # 降级到规则结果
+        except Exception as e:
+            logger.debug(f"LLM analysis failed, falling back to rule-based: {type(e).__name__}")
 
     heat = raw.likes * 1 + raw.reposts * 3 + raw.comments * 2
     processing_ms = int((time.time() - t0) * 1000)

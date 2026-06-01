@@ -25,8 +25,8 @@ $env:LLM_ROUTING = "local_first"
 Write-Host ""
 Write-Host "══════════════════════════════════════" -ForegroundColor Blue
 Write-Host "  舆情监控平台启动中..." -ForegroundColor Cyan
-Write-Host "  访问地址: http://localhost:8000" -ForegroundColor Green
-Write-Host "  API 文档: http://localhost:8000/docs" -ForegroundColor Yellow
+Write-Host "  访问地址: http://localhost:8001" -ForegroundColor Green
+Write-Host "  API 文档: http://localhost:8001/docs" -ForegroundColor Yellow
 Write-Host "══════════════════════════════════════" -ForegroundColor Blue
 Write-Host ""
 

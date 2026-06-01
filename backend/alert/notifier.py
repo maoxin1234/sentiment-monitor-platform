@@ -3,9 +3,11 @@
 支持：Webhook（企业微信/飞书/钉钉） | 邮件 | WebSocket实时推送
 """
 import asyncio
+import logging
 import httpx
 from typing import List, Callable, Awaitable
 
+logger = logging.getLogger(__name__)
 from config import config
 from models.schemas import AlertEvent, AlertLevel
 
@@ -87,8 +89,8 @@ class AlertNotifier:
         for cb in self._ws_callbacks:
             try:
                 await cb({"type": "alert", "data": payload})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"WebSocket alert push failed: {type(e).__name__}")
 
     async def _push_webhook(self, alert: AlertEvent):
         url = config.alert.webhook_url
@@ -104,8 +106,8 @@ class AlertNotifier:
         try:
             async with httpx.AsyncClient(timeout=5) as client:
                 await client.post(url, json=body)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Webhook alert push failed to {url}: {type(e).__name__}")
 
 
 notifier = AlertNotifier()
