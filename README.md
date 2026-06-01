@@ -2,8 +2,6 @@
 
 > 基于 Kafka + Flink 流处理架构，集成本地/云端大模型协同分析，提供实时可视化大屏与智能告警的开源舆情监控平台。
 
-![Dashboard Preview](docs/dashboard_preview.jpg)
-
 ## ✨ 核心特性
 
 | 特性 | 说明 |
