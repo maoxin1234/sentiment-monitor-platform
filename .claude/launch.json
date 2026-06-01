@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sentiment-backend",
+      "runtimeExecutable": "C:\\Users\\xin mao\\Desktop\\1\\sentiment-platform\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["C:\\Users\\xin mao\\Desktop\\1\\sentiment-platform\\backend\\main.py"],
+      "port": 8000,
+      "env": {
+        "USE_MOCK": "true",
+        "MOCK_RATE": "5"
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # ── Kafka + Zookeeper ─────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports: ["2181:2181"]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on: [zookeeper]
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+
+  # ── Redis ────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  # ── 本地 LLM（Ollama）────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes:
+      - ollama_data:/root/.ollama
+    # 拉取模型：docker exec ollama ollama pull deepseek-r1:7b
+
+  # ── 舆情平台后端 ──────────────────────────────────
+  backend:
+    build: ./backend
+    ports: ["8000:8000"]
+    depends_on: [kafka, redis, ollama]
+    environment:
+      KAFKA_SERVERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      LOCAL_LLM_URL: http://ollama:11434/v1
+      LOCAL_MODEL: deepseek-r1:7b
+      CLOUD_API_KEY: ${CLOUD_API_KEY:-}
+      CLOUD_LLM_URL: ${CLOUD_LLM_URL:-https://api.deepseek.com/v1}
+      CLOUD_MODEL: ${CLOUD_MODEL:-deepseek-chat}
+      LLM_ROUTING: ${LLM_ROUTING:-local_first}
+      USE_MOCK: ${USE_MOCK:-true}
+      MOCK_RATE: ${MOCK_RATE:-5}
+      ALERT_WEBHOOK: ${ALERT_WEBHOOK:-}
+    volumes:
+      - ../frontend:/app/frontend:ro
+
+volumes:
+  ollama_data:
